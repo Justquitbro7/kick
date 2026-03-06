@@ -2,65 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kick Tracker</title>
+    <title>JAILEX | Connect</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap">
     <style>
-        body { 
-            background-color: #060e1a; 
-            color: white; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            font-family: 'Orbitron', sans-serif; 
+        body { background: #060e1a; color: white; font-family: 'Orbitron'; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-btn { 
+            background: #53FC18; color: black; padding: 20px 40px; border: none; border-radius: 12px; 
+            font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(83, 252, 24, 0.4); transition: 0.3s;
         }
-        h2 { color: #53FC18; letter-spacing: 3px; font-size: 24px; margin-bottom: 5px; }
-        .follower-count { font-size: 80px; text-shadow: 0 0 20px #53FC18; margin: 0; }
-        .error-log { color: #ff3333; font-family: monospace; font-size: 14px; margin-top: 20px; text-align: center; max-width: 80%; }
+        .login-btn:hover { transform: scale(1.05); box-shadow: 0 0 40px #53FC18; }
     </style>
 </head>
 <body>
-
-    <h2>KICK FOLLOWERS</h2>
-    <div id="count" class="follower-count">SYNCING...</div>
-    <div id="log" class="error-log"></div>
+    <h1 style="color: #00d2ff; text-shadow: 0 0 10px #00d2ff;">JAILEX ENGINE</h1>
+    <p style="font-family: sans-serif; opacity: 0.6; margin-bottom: 30px;">AUTHORIZE CHAT & CHANNEL PERMISSIONS</p>
+    
+    <button class="login-btn" onclick="startLogin()">Connect to Kick</button>
 
     <script>
-        const USERNAME = 'justquitbro7';
-        // We use a free proxy called 'corsproxy.io' to trick the browser into allowing the connection
-        const TARGET_URL = encodeURIComponent(`https://kick.com/api/v2/channels/${USERNAME}`);
-        const PROXY_URL = `https://corsproxy.io/?${TARGET_URL}`;
-
-        async function getFollowers() {
-            try {
-                const response = await fetch(PROXY_URL, {
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Kick Security Blocked the Request (Code: ${response.status})`);
-                }
-
-                const data = await response.json();
-                
-                if(data.followersCount !== undefined) {
-                    document.getElementById('count').innerText = data.followersCount;
-                } else {
-                    document.getElementById('count').innerText = "HIDDEN";
-                    document.getElementById('log').innerText = "Data arrived, but Kick hid the follower count.";
-                }
-
-            } catch (error) {
-                document.getElementById('count').innerText = "ERROR";
-                document.getElementById('log').innerText = error.message + "\n\n(Cloudflare is still blocking the connection)";
-            }
+        function startLogin() {
+            // REPLACE THIS with your actual Client ID from your Kick Dev Portal
+            const CLIENT_ID = "YOUR_KICK_CLIENT_ID_HERE";
+            const REDIRECT = "https://kick-jade-nu.vercel.app/api/callback";
+            
+            // These are the "Permissions" we are asking for
+            const SCOPES = "chat:write+channel:read+user:read";
+            
+            window.location.href = `https://id.kick.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT)}&response_type=code&scope=${SCOPES}`;
         }
-
-        // Run the engine
-        getFollowers();
     </script>
-
 </body>
 </html>
