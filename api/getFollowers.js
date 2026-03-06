@@ -1,13 +1,13 @@
 const axios = require('axios');
 
-export default async function handler(req, res) {
-    // Vercel will safely inject your secret keys here
+module.exports = async function(req, res) {
+    // Vercel securely injects your keys here
     const CLIENT_ID = process.env.KICK_CLIENT_ID;
     const CLIENT_SECRET = process.env.KICK_CLIENT_SECRET;
     const USERNAME = 'justquitbro7'; 
 
     if (!CLIENT_ID || !CLIENT_SECRET) {
-        return res.status(500).json({ error: "Missing API Keys in Vercel." });
+        return res.status(500).json({ error: "Missing API Keys in Vercel. Check your Environment Variables." });
     }
 
     try {
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
     } catch (error) {
         return res.status(500).json({ 
             status: "ERROR", 
-            message: "Failed to connect to Kick API. Check your keys." 
+            message: "Failed to connect to Kick API. The keys might be invalid or Kick rejected the request." 
         });
     }
-}
+};
