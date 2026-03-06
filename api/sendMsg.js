@@ -1,10 +1,11 @@
 const axios = require('axios');
 
 module.exports = async function(req, res) {
-    // Vercel Vault Keys
     const CLIENT_ID = process.env.KICK_CLIENT_ID;
     const CLIENT_SECRET = process.env.KICK_CLIENT_SECRET;
-    const USERNAME = 'justquitbro7'; 
+    
+    // We already know your exact ID from the data dump earlier!
+    const BROADCASTER_ID = 93973564; 
     const MESSAGE = "🤖 Hello from the official Vercel Engine! The bot is armed.";
 
     if (!CLIENT_ID || !CLIENT_SECRET) {
@@ -23,16 +24,11 @@ module.exports = async function(req, res) {
 
         const accessToken = tokenResponse.data.access_token;
 
-        // 2. GET YOUR SPECIFIC CHATROOM ID (Just like the Jailex HUD does)
-        const userResponse = await axios.get(`https://kick.com/api/v2/channels/${USERNAME}`, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/122.0.0.0' }
-        });
-        
-        const chatroomId = userResponse.data.chatroom.id;
-
-        // 3. FIRE THE MESSAGE INTO YOUR CHATROOM
-        const chatResponse = await axios.post(`https://api.kick.com/public/v1/chatrooms/${chatroomId}/messages`, {
-            content: MESSAGE
+        // 2. FIRE THE MESSAGE USING THE CORRECT API ENDPOINT
+        const chatResponse = await axios.post('https://api.kick.com/public/v1/chat-messages', {
+            broadcaster_user_id: BROADCASTER_ID,
+            content: MESSAGE,
+            type: 'bot'
         }, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -41,11 +37,11 @@ module.exports = async function(req, res) {
             }
         });
 
-        // 4. CONFIRM MISSION SUCCESS
+        // 3. CONFIRM MISSION SUCCESS
         return res.status(200).json({ 
             status: "MESSAGE DELIVERED",
-            target_chat: USERNAME.toUpperCase(),
-            message_sent: MESSAGE
+            message_sent: MESSAGE,
+            kick_receipt: chatResponse.data
         });
 
     } catch (error) {
