@@ -1,7 +1,6 @@
 const axios = require('axios');
 
 module.exports = async function(req, res) {
-    // Vercel securely injects your keys here
     const CLIENT_ID = process.env.KICK_CLIENT_ID;
     const CLIENT_SECRET = process.env.KICK_CLIENT_SECRET;
     const USERNAME = 'justquitbro7'; 
@@ -40,9 +39,15 @@ module.exports = async function(req, res) {
         });
 
     } catch (error) {
+        // DIAGNOSTIC SCANNER: Capturing exactly what Kick rejected
+        const statusCode = error.response ? error.response.status : 'No Status';
+        const rawData = error.response ? error.response.data : error.message;
+
         return res.status(500).json({ 
             status: "ERROR", 
-            message: "Failed to connect to Kick API. The keys might be invalid or Kick rejected the request." 
+            message: "Failed to connect to Kick API.",
+            kick_error_code: statusCode,
+            kick_raw_response: rawData
         });
     }
 };
