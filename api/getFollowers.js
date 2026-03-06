@@ -1,49 +1,30 @@
 const axios = require('axios');
 
 module.exports = async function(req, res) {
-    const CLIENT_ID = process.env.KICK_CLIENT_ID;
-    const CLIENT_SECRET = process.env.KICK_CLIENT_SECRET;
     const USERNAME = 'justquitbro7'; 
 
-    if (!CLIENT_ID || !CLIENT_SECRET) {
-        return res.status(500).json({ error: "Missing API Keys." });
-    }
-
     try {
-        const tokenResponse = await axios.post('https://id.kick.com/oauth/token', {
-            grant_type: 'client_credentials',
-            client_id: CLIENT_ID,
-            client_secret: CLIENT_SECRET
-        }, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        });
-
-        const accessToken = tokenResponse.data.access_token;
-
-        const channelResponse = await axios.get(`https://api.kick.com/public/v1/channels?slug=${USERNAME}`, {
+        // Pinging Kick's public V2 API directly (No secret keys required!)
+        const response = await axios.get(`https://api.kick.com/api/v2/channels/${USERNAME}`, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
             }
         });
 
-        const channelData = channelResponse.data.data ? channelResponse.data.data[0] : channelResponse.data[0];
+        // Extracting the exact follower count from the V2 data
+        const followers = response.data.followersCount;
         
-        if (!channelData) {
-            return res.status(404).json({ error: "Channel found, but no data returned." });
-        }
-
-        // We are dumping the raw data to see EXACTLY what Kick is giving us
         return res.status(200).json({ 
             status: "SUCCESS",
             username: USERNAME.toUpperCase(),
-            raw_kick_data: channelData
+            followers: followers 
         });
 
     } catch (error) {
         return res.status(500).json({ 
             status: "ERROR", 
-            message: "Failed to connect to Kick API." 
+            message: "Failed to connect to Kick V2 API."
         });
     }
 };
