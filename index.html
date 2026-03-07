@@ -2,42 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JAILEX | Connect</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap">
+    <title>JAILEX | Chat Monitor</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;700&display=swap">
     <style>
-        body { background: #060e1a; color: white; font-family: 'Orbitron'; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-btn { 
-            background: #53FC18; color: black; padding: 20px 40px; border: none; border-radius: 12px; 
-            font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-            box-shadow: 0 0 20px rgba(83, 252, 24, 0.4); transition: 0.3s;
+        body { 
+            background: #060e1a; color: white; font-family: 'Inter', sans-serif; 
+            margin: 0; display: flex; flex-direction: column; align-items: center; 
         }
-        .login-btn:hover { transform: scale(1.05); box-shadow: 0 0 40px #53FC18; }
+        .header { 
+            width: 100%; background: #0a1628; padding: 20px; text-align: center; 
+            border-bottom: 2px solid #53FC18; font-family: 'Orbitron';
+        }
+        .header h1 { color: #53FC18; margin: 0; font-size: 24px; letter-spacing: 2px; }
+        #chat-box { 
+            width: 90%; max-width: 600px; margin-top: 20px; 
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .message { 
+            background: #112240; padding: 15px; border-radius: 8px; 
+            border-left: 4px solid #00d2ff; animation: slideIn 0.3s ease-out;
+        }
+        .user { color: #53FC18; font-weight: 700; margin-bottom: 5px; font-size: 14px; }
+        .text { color: #e6f1ff; font-size: 16px; line-height: 1.4; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
-    <h1 style="color: #00d2ff; text-shadow: 0 0 10px #00d2ff;">JAILEX ENGINE</h1>
-    <p style="font-family: sans-serif; opacity: 0.6; margin-bottom: 30px;">GRANT CHAT PERMISSIONS</p>
-    
-    <button class="login-btn" onclick="startLogin()">Connect to Kick</button>
+
+    <div class="header">
+        <h1>JAILEX MONITOR: JUSTQUITBRO7</h1>
+    </div>
+
+    <div id="chat-box">
+        <div class="message"><div class="text">Waiting for new messages...</div></div>
+    </div>
 
     <script>
-        function startLogin() {
-            // !!! REPLACE THIS WITH YOUR CLIENT ID FROM KICK DEV PORTAL !!!
-            const CLIENT_ID = "YOUR_KICK_CLIENT_ID_HERE"; 
-            const REDIRECT = "https://kick-jade-nu.vercel.app/api/callback";
-            const SCOPES = "user:read channel:read chat:write";
-            
-            const authUrl = `https://id.kick.com/oauth/authorize`;
-            const params = new URLSearchParams({
-                client_id: CLIENT_ID,
-                redirect_uri: REDIRECT,
-                response_type: 'code',
-                scope: SCOPES,
-                state: Math.random().toString(36).substring(7)
-            });
-
-            window.location.href = `${authUrl}?${params.toString()}`;
+        async function fetchChat() {
+            try {
+                const response = await fetch('/api/readChat');
+                const data = await response.json();
+                
+                if (data.status === "SUCCESS" && data.latest_messages.length > 0) {
+                    const chatBox = document.getElementById('chat-box');
+                    chatBox.innerHTML = ''; // Clear old view
+                    
+                    data.latest_messages.forEach(msg => {
+                        const div = document.createElement('div');
+                        div.className = 'message';
+                        div.innerHTML = `
+                            <div class="user">${msg.user} <span style="color:#666; font-weight:normal;">[${msg.time}]</span></div>
+                            <div class="text">${msg.text}</div>
+                        `;
+                        chatBox.appendChild(div);
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to sync chat.");
+            }
         }
+
+        // Auto-refresh every 3 seconds
+        setInterval(fetchChat, 3000);
+        fetchChat();
     </script>
+
 </body>
 </html>
